@@ -11,7 +11,9 @@ import 'modules/home/presentation/home_shell.dart';
 import 'shared/state/app_state.dart';
 import 'shared/theme/app_theme.dart';
 import 'shared/widgets/splash_page.dart';
+import 'web/delete_account_page.dart';
 import 'web/landing_page.dart';
+import 'web/privacy_policy_page.dart';
 
 class ChurchHubApp extends StatelessWidget {
   const ChurchHubApp({super.key});
@@ -105,6 +107,12 @@ class _AppHomeState extends State<_AppHome> with WidgetsBindingObserver {
         final authKey =
             '${appState.isBootstrapping}-${appState.isAuthenticated}-'
             '${appState.currentUser?.churchId}';
+
+        if (kIsWeb) {
+          final path = Uri.base.path;
+          if (path == '/privacy') return const PrivacyPolicyPage();
+          if (path == '/delete-account') return const DeleteAccountPage();
+        }
 
         if (appState.isBootstrapping) {
           return SplashPage(key: ValueKey('splash-$authKey'));

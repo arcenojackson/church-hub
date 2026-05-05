@@ -65,6 +65,17 @@ service cloud.firestore {
     }
 
     // ─────────────────────────────────────────────
+    // DELETION REQUESTS
+    // Public write so unauthenticated users can request account deletion.
+    // Processed server-side by Cloud Function trigger.
+    // ─────────────────────────────────────────────
+
+    match /deletion_requests/{docId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+
+    // ─────────────────────────────────────────────
     // INVITE CODES
     // Top-level collection so users without a churchId can look up a church
     // before joining. The code is the document ID; value is {churchId}.

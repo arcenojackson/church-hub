@@ -459,6 +459,54 @@ async function processReminderRule(
 }
 
 // ─────────────────────────────────────────────
+// TRIGGER: Process account deletion requests
+// ─────────────────────────────────────────────
+
+export const onDeletionRequestCreated = functions
+    .region(REGION)
+    .firestore.document("deletion_requests/{docId}")
+    .onCreate(async (snapshot, context) => {
+      const {docId} = context.params;
+      const data = snapshot.data();
+      const email: string = (data.email || "").trim().toLowerCase();
+      const churchId: string = (data.churchId || "").trim();
+
+      const fail = async (reason: string) => {
+        console.warn(`Deletion request ${docId} rejected: ${reason}`);
+        await snapshot.ref.delete();
+      };
+
+      if (!email || !churchId) return fail("missing fields");
+
+      // 1. Find Firebase Auth user by email
+      let uid: string;
+      try {
+        const authUser = await admin.auth().getUserByEmail(email);
+        uid = authUser.uid;
+      } catch {
+        return fail(`no auth user for email ${email}`);
+      }
+
+      // 2. Verify user belongs to this church
+      const userDoc = await db.collection("users").doc(uid).get();
+      if (!userDoc.exists || userDoc.data()?.churchId !== churchId) {
+        return fail(`user ${uid} does not belong to church ${churchId}`);
+      }
+
+      // 3. Delete Firestore user document
+      await db.collection("users").doc(uid).delete();
+
+      // 4. Delete Firebase Auth account
+      await admin.auth().deleteUser(uid);
+
+      // 5. Mark request as completed
+      await snapshot.ref.set({...data, status: "completed"}, {merge: true});
+
+      console.log(`Account deleted via request ${docId}: uid=${uid}`);
+      return null;
+    });
+
+// ─────────────────────────────────────────────
 // SCHEDULED: Subscription checker (daily)
 // ─────────────────────────────────────────────
 

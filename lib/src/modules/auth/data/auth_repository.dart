@@ -19,9 +19,9 @@ class AuthRepository {
   final SessionStorage _sessionStorage;
   final FirebaseAuth _auth = FirebaseConfig.auth;
   final FirebaseFirestore _db = FirebaseConfig.firestore;
-  // serverClientId: obtenha em Firebase Console → Authentication → Google → Web SDK configuration
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
+    serverClientId: '50041359262-jpoeaej8g281psd7hph5gidbibuliq9m.apps.googleusercontent.com',
   );
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
@@ -76,24 +76,36 @@ class AuthRepository {
 
   Future<UserModel> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        throw AppException(message: 'Login com Google cancelado');
+      UserCredential userCredential;
+
+      if (kIsWeb) {
+        final provider = GoogleAuthProvider();
+        userCredential = await _auth.signInWithPopup(provider);
+      } else {
+        final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+        if (googleUser == null) {
+          throw AppException(message: 'Login com Google cancelado');
+        }
+
+        final googleAuth = await googleUser.authentication;
+        if (googleAuth.accessToken == null && googleAuth.idToken == null) {
+          throw AppException(message: 'Falha ao obter tokens do Google.');
+        }
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        userCredential = await _auth.signInWithCredential(credential);
       }
 
-      final googleAuth = await googleUser.authentication;
-      if (googleAuth.accessToken == null || googleAuth.idToken == null) {
-        throw AppException(message: 'Falha ao obter tokens do Google. Adicione o serverClientId no GoogleSignIn.');
+      final firebaseUser = userCredential.user;
+      if (firebaseUser == null) {
+        throw AppException(message: 'Falha ao autenticar com Google.');
       }
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
 
-      final userCredential = await _auth.signInWithCredential(credential);
-      final user = await _getOrCreateUser(userCredential.user!);
+      final user = await _getOrCreateUser(firebaseUser);
       await _sessionStorage.saveUser(user);
-      await _saveFcmToken(userCredential.user!.uid);
+      await _saveFcmToken(firebaseUser.uid);
       return user;
     } on FirebaseAuthException catch (e) {
       throw AppException(message: _handleAuthError(e));

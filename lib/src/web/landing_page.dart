@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../modules/auth/presentation/login_page.dart';
+import 'delete_account_page.dart';
+import 'privacy_policy_page.dart';
 
 class LandingPage extends StatefulWidget {
   const LandingPage({super.key});
@@ -505,7 +507,9 @@ class _Footer extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               TextButton(
-                onPressed: () {},
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const PrivacyPolicyPage()),
+                ),
                 child: const Text('Privacidade', style: TextStyle(color: Colors.white38, fontSize: 12)),
               ),
               TextButton(
@@ -515,6 +519,12 @@ class _Footer extends StatelessWidget {
               TextButton(
                 onPressed: () {},
                 child: const Text('Contato', style: TextStyle(color: Colors.white38, fontSize: 12)),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const DeleteAccountPage()),
+                ),
+                child: const Text('Excluir conta', style: TextStyle(color: Colors.white38, fontSize: 12)),
               ),
             ],
           ),
