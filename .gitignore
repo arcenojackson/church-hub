@@ -50,3 +50,6 @@ functions/lib/
 
 # Claude local settings
 **/.claude/settings.local.json
+
+# Secrets — não commitar
+lib/src/core/config/app_secrets.dart
