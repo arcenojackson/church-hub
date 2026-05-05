@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/utils/app_exception.dart';
+import '../../../shared/utils/app_toast.dart';
 import '../../societies/data/societies_repository.dart';
 import '../../societies/models/society_model.dart';
 import '../data/calendar_batch_repository.dart';
@@ -152,9 +153,7 @@ class _EventEditorPageState extends State<EventEditorPage> {
       if (mounted) Navigator.of(context).pop();
     } on AppException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message)),
-        );
+        showErrorToast(context, e.message);
       }
     } finally {
       if (mounted) setState(() => _loading = false);

@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../shared/state/app_state.dart';
+import '../../../shared/utils/app_toast.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -46,9 +47,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       if (mounted) Navigator.of(context).pop();
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erro ao salvar. Tente novamente.')),
-        );
+        showErrorToast(context, 'Erro ao salvar. Tente novamente.');
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -116,11 +115,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     bottom: 0,
                     right: 0,
                     child: GestureDetector(
-                      onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Em breve: suporte a foto de perfil'),
-                        ),
-                      ),
+                      onTap: () => showSuccessToast(context, 'Em breve: suporte a foto de perfil'),
                       child: Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(

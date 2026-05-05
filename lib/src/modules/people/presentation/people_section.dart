@@ -7,6 +7,7 @@ import '../../auth/models/user_model.dart';
 import '../data/people_repository.dart';
 import '../../../shared/state/app_state.dart';
 import '../../../modules/profiles/models/profile_model.dart';
+import '../../../shared/utils/app_toast.dart';
 
 class PeopleSection extends StatelessWidget {
   const PeopleSection({super.key});
@@ -240,10 +241,7 @@ class _MemberActionsSheetState extends State<_MemberActionsSheet> {
                       await repo.updateMemberProfile(
                           widget.member.id, _selectedProfileId);
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Perfil atualizado!')),
-                        );
+                        showSuccessToast(context, 'Perfil atualizado!');
                         Navigator.of(context).pop();
                       }
                     } finally {
@@ -438,11 +436,7 @@ class _ApprovalSheetState extends State<_ApprovalSheet> {
                       await repo.approveUser(
                           widget.member.id, _selectedProfileId);
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text(
-                                  '${widget.member.name} aprovado!')),
-                        );
+                        showSuccessToast(context, '${widget.member.name} aprovado!');
                         Navigator.of(context).pop();
                       }
                     } finally {
@@ -494,9 +488,7 @@ class _InviteCard extends StatelessWidget {
         'https://wa.me/?text=${Uri.encodeComponent(message)}');
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Não foi possível abrir o WhatsApp.')),
-        );
+        showErrorToast(context, 'Não foi possível abrir o WhatsApp.');
       }
     }
   }
@@ -536,9 +528,7 @@ class _InviteCard extends StatelessWidget {
             tooltip: 'Copiar código',
             onPressed: () {
               Clipboard.setData(ClipboardData(text: code));
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Código copiado!')),
-              );
+              showSuccessToast(context, 'Código copiado!');
             },
           ),
           IconButton(

@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../shared/state/app_state.dart';
+import '../../../shared/utils/app_toast.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage({super.key, this.initialSignUp = false});
+
+  final bool initialSignUp;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -15,7 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
-  bool _isSignUp = false;
+  late bool _isSignUp = widget.initialSignUp;
   bool _obscurePassword = true;
   final _nameCtrl = TextEditingController();
 
@@ -45,9 +48,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     } on Exception catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        showErrorToast(context, e.toString());
       }
     }
   }
@@ -58,9 +59,7 @@ class _LoginPageState extends State<LoginPage> {
       await state.signInWithGoogle();
     } on Exception catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        showErrorToast(context, e.toString());
       }
     }
   }
@@ -71,9 +70,7 @@ class _LoginPageState extends State<LoginPage> {
       await state.signInWithApple();
     } on Exception catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        showErrorToast(context, e.toString());
       }
     }
   }
@@ -189,35 +186,33 @@ class _LoginPageState extends State<LoginPage> {
                           : 'Não tenho conta',
                     ),
                   ),
-                  if (!_isSignUp) ...[
-                    const SizedBox(height: 24),
-                    Row(
-                      children: [
-                        const Expanded(child: Divider()),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text(
-                            'ou',
-                            style: TextStyle(color: Colors.white38),
-                          ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      const Expanded(child: Divider()),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'ou',
+                          style: TextStyle(color: Colors.white38),
                         ),
-                        const Expanded(child: Divider()),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    _SocialButton(
-                      label: 'Continuar com Google',
-                      icon: Icons.g_mobiledata_rounded,
-                      onPressed: isLoading ? null : _signInWithGoogle,
-                    ),
-                    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) ...[
-                      const SizedBox(height: 12),
-                      _SocialButton(
-                        label: 'Continuar com Apple',
-                        icon: Icons.apple_rounded,
-                        onPressed: isLoading ? null : _signInWithApple,
                       ),
+                      const Expanded(child: Divider()),
                     ],
+                  ),
+                  const SizedBox(height: 24),
+                  _SocialButton(
+                    label: 'Continuar com Google',
+                    icon: Icons.g_mobiledata_rounded,
+                    onPressed: isLoading ? null : _signInWithGoogle,
+                  ),
+                  if (!_isSignUp && !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) ...[
+                    const SizedBox(height: 12),
+                    _SocialButton(
+                      label: 'Continuar com Apple',
+                      icon: Icons.apple_rounded,
+                      onPressed: isLoading ? null : _signInWithApple,
+                    ),
                   ],
                 ],
               ),

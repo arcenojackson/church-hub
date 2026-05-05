@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/utils/app_exception.dart';
 import '../../modules/auth/data/auth_repository.dart';
@@ -14,6 +15,8 @@ class AppState extends ChangeNotifier {
 
   final AuthRepository _authRepository;
 
+  static const _accentColorKey = 'church_hub_accent_color';
+
   UserModel? _currentUser;
   ChurchModel? _currentChurch;
   ChurchSettingsModel? _churchSettings;
@@ -22,9 +25,11 @@ class AppState extends ChangeNotifier {
   String? _error;
   List<ProfileModel> _churchProfiles = [];
   ProfileModel? _currentUserProfile;
+  int? _cachedAccentColor;
 
   UserModel? get currentUser => _currentUser;
   ChurchModel? get currentChurch => _currentChurch;
+  int? get cachedAccentColor => _cachedAccentColor;
   ChurchSettingsModel? get churchSettings => _churchSettings;
   bool get isAuthenticated => _currentUser != null;
   bool get isBootstrapping => _isBootstrapping;
@@ -72,6 +77,9 @@ class AppState extends ChangeNotifier {
 
   Future<void> bootstrap() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getInt(_accentColorKey);
+      if (saved != null) _cachedAccentColor = saved;
       _currentUser = await _authRepository.restoreSession();
     } finally {
       _isBootstrapping = false;
@@ -174,6 +182,9 @@ class AppState extends ChangeNotifier {
 
   void setChurch(ChurchModel church) {
     _currentChurch = church;
+    _cachedAccentColor = church.accentColor;
+    SharedPreferences.getInstance()
+        .then((p) => p.setInt(_accentColorKey, church.accentColor));
     notifyListeners();
   }
 

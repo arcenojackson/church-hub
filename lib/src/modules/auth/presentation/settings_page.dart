@@ -1,16 +1,20 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../shared/state/app_state.dart';
+import '../../../shared/utils/app_toast.dart';
 import '../models/user_model.dart';
 import 'edit_profile_page.dart';
 import '../../church/presentation/church_settings_page.dart';
+import '../../profiles/presentation/profiles_page.dart';
+import '../../events/data/events_repository.dart';
+import '../../events/data/calendar_batch_repository.dart';
 import '../../events/presentation/calendar_batch_settings_page.dart';
 import '../../events/presentation/calendar_page.dart';
 import '../../musics/presentation/musics_section.dart';
 import '../../music_evaluations/presentation/evaluations_list_page.dart';
+import '../../people/data/people_repository.dart';
 import '../../people/presentation/people_section.dart';
 import '../../notifications/presentation/notification_settings_page.dart';
 
@@ -72,9 +76,7 @@ class SettingsSection extends StatelessWidget {
               await launchUrl(uri, mode: LaunchMode.externalApplication);
             } catch (_) {
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Não foi possível abrir o app de email.')),
-                );
+                showErrorToast(context, 'Não foi possível abrir o app de email.');
               }
             }
           },
@@ -242,6 +244,7 @@ class _QuickAccessGrid extends StatelessWidget {
     final churchId = this.churchId;
 
     return [
+      // Linha 1: Sua igreja | Calendário
       _QuickAccessTile(
         icon: Icons.church_rounded,
         label: 'Sua igreja',
@@ -259,16 +262,7 @@ class _QuickAccessGrid extends StatelessWidget {
           MaterialPageRoute(builder: (_) => const CalendarPage()),
         ),
       ),
-      _QuickAccessTile(
-        icon: Icons.music_note_rounded,
-        label: 'Músicas',
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(
-              builder: (_) => _SectionShell(
-                  title: 'Músicas',
-                  child: MusicsSection(canEdit: isAdmin))),
-        ),
-      ),
+      // Linha 2: Pessoas | Perfis
       if (isAdmin)
         _QuickAccessTile(
           icon: Icons.people_outline_rounded,
@@ -282,16 +276,15 @@ class _QuickAccessGrid extends StatelessWidget {
                     title: 'Pessoas', child: PeopleSection())),
           ),
         ),
-      _QuickAccessTile(
-        icon: Icons.rate_review_rounded,
-        label: 'Avaliações musicais',
-        badgeFuture: Future.value('Em contrução...'),
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(
-              builder: (_) => const _SectionShell(
-                  title: 'Avaliações musicais', child: EvaluationsListPage())),
+      if (isAdmin)
+        _QuickAccessTile(
+          icon: Icons.badge_outlined,
+          label: 'Perfis',
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const ProfilesPage()),
+          ),
         ),
-      ),
+      // Linha 3: Compromissos fixos | Músicas
       if (isAdmin)
         _QuickAccessTile(
           icon: Icons.event_note_outlined,
@@ -303,80 +296,43 @@ class _QuickAccessGrid extends StatelessWidget {
             MaterialPageRoute(builder: (_) => const CalendarBatchSettingsPage()),
           ),
         ),
+      _QuickAccessTile(
+        icon: Icons.music_note_rounded,
+        label: 'Músicas',
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+              builder: (_) => _SectionShell(
+                  title: 'Músicas',
+                  child: MusicsSection(canEdit: isAdmin))),
+        ),
+      ),
+      // Linha 4: Avaliações musicais
+      _QuickAccessTile(
+        icon: Icons.rate_review_rounded,
+        label: 'Avaliações musicais',
+        badgeFuture: Future.value('Em contrução...'),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+              builder: (_) => const _SectionShell(
+                  title: 'Avaliações musicais', child: EvaluationsListPage())),
+        ),
+      ),
     ];
   }
 
   Future<String?> _eventsThisWeek(String churchId) async {
-    final now = DateTime.now();
-    final startOfWeek =
-        DateTime(now.year, now.month, now.day - now.weekday + 1);
-    final endOfWeek = startOfWeek.add(const Duration(days: 7));
-
-    try {
-      final snap = await FirebaseFirestore.instance
-          .collection('churches')
-          .doc(churchId)
-          .collection('events')
-          .where('date',
-              isGreaterThanOrEqualTo: Timestamp.fromDate(startOfWeek))
-          .where('date', isLessThan: Timestamp.fromDate(endOfWeek))
-          .count()
-          .get();
-
-      final count = snap.count ?? 0;
-      return count > 0 ? '$count esta semana' : null;
-    } catch (_) {
-      return null;
-    }
+    final count = await EventsRepository(churchId: churchId).countEventsThisWeek();
+    return count > 0 ? '$count esta semana' : null;
   }
 
   Future<String?> _pendingMembers(String churchId) async {
-    try {
-      final snap = await FirebaseFirestore.instance
-          .collection('users')
-          .where('churchId', isEqualTo: churchId)
-          .where('status', isEqualTo: 'pending')
-          .count()
-          .get();
-
-      final count = snap.count ?? 0;
-      return count > 0 ? '$count aguardando' : null;
-    } catch (_) {
-      return null;
-    }
+    final count = await PeopleRepository(churchId: churchId).countPendingMembers();
+    return count > 0 ? '$count aguardando' : null;
   }
 
   Future<String?> _templateCount(String churchId) async {
-    try {
-      final snap = await FirebaseFirestore.instance
-          .collection('churches')
-          .doc(churchId)
-          .collection('calendar_batch_templates')
-          .count()
-          .get();
-
-      final count = snap.count ?? 0;
-      return count > 0 ? '$count ${count == 1 ? 'template' : 'templates'}' : null;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  Future<String?> _pendingEvaluations(String churchId) async {
-    try {
-      final snap = await FirebaseFirestore.instance
-          .collection('churches')
-          .doc(churchId)
-          .collection('evaluations')
-          .where('status', isEqualTo: 'pending')
-          .count()
-          .get();
-
-      final count = snap.count ?? 0;
-      return count > 0 ? '$count pendentes' : null;
-    } catch (_) {
-      return null;
-    }
+    final count = await CalendarBatchRepository(churchId: churchId).countTemplates();
+    return count > 0 ? '$count ${count == 1 ? 'template' : 'templates'}' : null;
   }
 }
 
@@ -456,9 +412,7 @@ class _DonationBanner extends StatelessWidget {
     final uri = Uri.parse(_donationUrl);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Não foi possível abrir o link.')),
-        );
+        showErrorToast(context, 'Não foi possível abrir o link.');
       }
     }
   }

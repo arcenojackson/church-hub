@@ -33,7 +33,8 @@ class ChurchRepository {
         state: state,
         description: description,
       );
-      await ref.set(church.toJson());
+      await ref.set({...church.toJson(), 'inviteCode': church.inviteCode});
+      await _inviteCodes.doc(church.inviteCode).set({'churchId': church.id});
       return church;
     } catch (e) {
       throw AppException(message: 'Erro ao criar igreja: ${e.toString()}');
@@ -119,20 +120,22 @@ class ChurchRepository {
     }
   }
 
+  CollectionReference get _inviteCodes => _db.collection('invite_codes');
+
   Future<void> generateInviteCode(String churchId) async {
     final code = churchId.substring(0, 8).toUpperCase();
     await updateChurch(churchId, {'inviteCode': code});
+    await _inviteCodes.doc(code).set({'churchId': churchId});
   }
 
-  Future<ChurchModel?> findByInviteCode(String code) async {
+  /// Returns the churchId for the given invite code, or null if not found.
+  /// Reads from the top-level `invite_codes` collection which allows any
+  /// authenticated user to read, bypassing the church membership restriction.
+  Future<String?> findChurchIdByInviteCode(String code) async {
     try {
-      final query = await _churches
-          .where('inviteCode', isEqualTo: code.toUpperCase())
-          .limit(1)
-          .get();
-      if (query.docs.isEmpty) return null;
-      final doc = query.docs.first;
-      return ChurchModel.fromJson(doc.data() as Map<String, dynamic>, doc.id);
+      final doc = await _inviteCodes.doc(code.toUpperCase()).get();
+      if (!doc.exists || doc.data() == null) return null;
+      return (doc.data() as Map<String, dynamic>)['churchId'] as String?;
     } catch (e) {
       return null;
     }

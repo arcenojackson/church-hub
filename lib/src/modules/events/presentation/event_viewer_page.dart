@@ -1,6 +1,10 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/config/firebase_config.dart';
 import '../../../shared/state/app_state.dart';
@@ -44,6 +48,9 @@ class _EventViewerPageState extends State<EventViewerPage>
   List<UserModel> _members = const [];
   int _currentTabIndex = 0;
 
+  bool _hasUnread = false;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _chatSub;
+
   @override
   void initState() {
     super.initState();
@@ -54,12 +61,14 @@ class _EventViewerPageState extends State<EventViewerPage>
     );
     _tabCtrl.addListener(_onTabChanged);
     _loadData();
+    _initChatUnread();
   }
 
   @override
   void dispose() {
     _tabCtrl.removeListener(_onTabChanged);
     _tabCtrl.dispose();
+    _chatSub?.cancel();
     super.dispose();
   }
 
@@ -202,13 +211,62 @@ class _EventViewerPageState extends State<EventViewerPage>
 
   // --- Chat (read) ---
 
+  Future<void> _initChatUnread() async {
+    final churchId = context.read<EventsRepository>().churchId;
+    final myId = context.read<AppState>().currentUser?.id ?? '';
+    final prefs = await SharedPreferences.getInstance();
+    final lastReadMs = prefs.getInt('chat_last_read_${widget.eventId}') ?? 0;
+    final lastRead = DateTime.fromMillisecondsSinceEpoch(lastReadMs);
+
+    _chatSub = FirebaseConfig.firestore
+        .collection('churches')
+        .doc(churchId)
+        .collection('events')
+        .doc(widget.eventId)
+        .collection('messages')
+        .orderBy('createdAt', descending: true)
+        .limit(1)
+        .snapshots()
+        .listen(
+      (snap) {
+        if (!mounted) return;
+        if (snap.docs.isEmpty) {
+          setState(() => _hasUnread = false);
+          return;
+        }
+        final data = snap.docs.first.data();
+        final ts = data['createdAt'];
+        final senderId = data['userId']?.toString() ?? '';
+        // Show badge for messages from others that are newer than lastRead
+        if (ts is Timestamp && senderId != myId) {
+          setState(() => _hasUnread = ts.toDate().isAfter(lastRead));
+        }
+      },
+      onError: (_) {/* fail silently — badge simply won't show */},
+    );
+  }
+
+  Future<void> _markChatAsRead() async {
+    if (!mounted) return;
+    setState(() => _hasUnread = false);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(
+      'chat_last_read_${widget.eventId}',
+      DateTime.now().millisecondsSinceEpoch,
+    );
+  }
+
   void _openChat(EventModel event) {
+    _markChatAsRead();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (ctx) => SizedBox(
         height: MediaQuery.of(ctx).size.height * 0.85,
-        child: EventChatPage(event: event),
+        child: EventChatPage(
+          event: event,
+          onOpened: _markChatAsRead,
+        ),
       ),
     );
   }
@@ -306,7 +364,25 @@ class _EventViewerPageState extends State<EventViewerPage>
             title: Text(event.name),
             actions: [
               IconButton(
-                icon: const Icon(Icons.chat_bubble_outline_rounded),
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(Icons.chat_bubble_outline_rounded),
+                    if (_hasUnread)
+                      Positioned(
+                        top: -2,
+                        right: -2,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Colors.redAccent,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
                 tooltip: 'Chat do evento',
                 onPressed: () => _openChat(event),
               ),

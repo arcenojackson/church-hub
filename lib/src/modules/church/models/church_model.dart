@@ -25,6 +25,9 @@ class ChurchModel {
   final DateTime createdAt;
   final bool setupCompleted;
 
+  /// Código de convite permanente derivado do ID da igreja.
+  String get inviteCode => id.substring(0, 8).toUpperCase();
+
   // NOTE: These tier getters are no longer used for feature gating.
   // All features are unlocked for all churches (app is fully free).
   // Kept for data/reporting purposes only.

@@ -4,8 +4,9 @@ import 'package:provider/provider.dart';
 
 import '../data/church_repository.dart';
 import '../models/church_model.dart';
-import '../../../modules/profiles/presentation/profiles_page.dart';
+import '../../../shared/permissions/app_permission.dart';
 import '../../../shared/state/app_state.dart';
+import '../../../shared/utils/app_toast.dart';
 
 class ChurchSettingsPage extends StatefulWidget {
   const ChurchSettingsPage({super.key});
@@ -32,6 +33,8 @@ class _ChurchSettingsPageState extends State<ChurchSettingsPage> {
       _stateCtrl.text = church.state ?? '';
       _descCtrl.text = church.description ?? '';
       _accentColor = church.accentColor;
+      // Garante que o campo inviteCode existe no Firestore para igrejas antigas.
+      context.read<ChurchRepository>().generateInviteCode(church.id);
     }
   }
 
@@ -72,15 +75,11 @@ class _ChurchSettingsPageState extends State<ChurchSettingsPage> {
       appState.setChurch(updatedChurch);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Configurações salvas!')),
-        );
+        showSuccessToast(context, 'Configurações salvas!');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        showErrorToast(context, e.toString());
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -89,8 +88,10 @@ class _ChurchSettingsPageState extends State<ChurchSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final church = context.watch<AppState>().currentChurch;
-    final inviteCode = church?.id.substring(0, 8).toUpperCase() ?? '';
+    final appState = context.watch<AppState>();
+    final church = appState.currentChurch;
+    final inviteCode = church?.inviteCode ?? '';
+    final canEdit = appState.can(AppPermission.manageChurchSettings);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Configurações da Igreja')),
@@ -133,17 +134,23 @@ class _ChurchSettingsPageState extends State<ChurchSettingsPage> {
                   icon: const Icon(Icons.copy_outlined),
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: inviteCode));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Código copiado!')),
-                    );
+                    showSuccessToast(context, 'Código copiado!');
                   },
                 ),
               ],
             ),
           ),
+          if (!canEdit) ...[
+            const SizedBox(height: 12),
+            const Text(
+              'Você não tem permissão para editar as configurações da igreja.',
+              style: TextStyle(color: Colors.white38, fontSize: 12),
+            ),
+          ],
           const SizedBox(height: 32),
           TextField(
             controller: _nameCtrl,
+            enabled: canEdit,
             decoration: const InputDecoration(
               labelText: 'Nome da Igreja *',
               prefixIcon: Icon(Icons.church_rounded),
@@ -155,6 +162,7 @@ class _ChurchSettingsPageState extends State<ChurchSettingsPage> {
               Expanded(
                 child: TextField(
                   controller: _cityCtrl,
+                  enabled: canEdit,
                   decoration: const InputDecoration(labelText: 'Cidade'),
                 ),
               ),
@@ -163,6 +171,7 @@ class _ChurchSettingsPageState extends State<ChurchSettingsPage> {
                 width: 80,
                 child: TextField(
                   controller: _stateCtrl,
+                  enabled: canEdit,
                   textCapitalization: TextCapitalization.characters,
                   decoration: const InputDecoration(labelText: 'UF'),
                 ),
@@ -172,6 +181,7 @@ class _ChurchSettingsPageState extends State<ChurchSettingsPage> {
           const SizedBox(height: 16),
           TextField(
             controller: _descCtrl,
+            enabled: canEdit,
             maxLines: 3,
             decoration: const InputDecoration(
               labelText: 'Descrição',
@@ -192,12 +202,12 @@ class _ChurchSettingsPageState extends State<ChurchSettingsPage> {
             children: ChurchModel.accentColorOptions.map((color) {
               final selected = _accentColor == color;
               return GestureDetector(
-                onTap: () => setState(() => _accentColor = color),
+                onTap: canEdit ? () => setState(() => _accentColor = color) : null,
                 child: Container(
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Color(color),
+                    color: Color(color).withValues(alpha: canEdit ? 1.0 : 0.5),
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: selected ? Colors.white : Colors.transparent,
@@ -211,29 +221,19 @@ class _ChurchSettingsPageState extends State<ChurchSettingsPage> {
               );
             }).toList(),
           ),
-          const Divider(height: 40),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.badge_outlined),
-            title: const Text('Perfis e Permissões'),
-            subtitle: const Text('Gerencie os perfis de acesso dos membros',
-                style: TextStyle(fontSize: 12, color: Colors.white38)),
-            trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white24),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ProfilesPage()),
+          if (canEdit) ...[
+            const SizedBox(height: 24),
+            FilledButton(
+              onPressed: _saving ? null : _save,
+              child: _saving
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text('Salvar configurações'),
             ),
-          ),
-          const SizedBox(height: 24),
-          FilledButton(
-            onPressed: _saving ? null : _save,
-            child: _saving
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                  )
-                : const Text('Salvar configurações'),
-          ),
+          ],
         ],
       ),
     );

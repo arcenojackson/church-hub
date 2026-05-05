@@ -65,6 +65,20 @@ service cloud.firestore {
     }
 
     // ─────────────────────────────────────────────
+    // INVITE CODES
+    // Top-level collection so users without a churchId can look up a church
+    // before joining. The code is the document ID; value is {churchId}.
+    // ─────────────────────────────────────────────
+
+    match /invite_codes/{code} {
+      allow read: if isLoggedIn();
+      allow write: if isLoggedIn() && (
+        !exists(/databases/$(database)/documents/invite_codes/$(code)) ||
+        isChurchAdmin(get(/databases/$(database)/documents/invite_codes/$(code)).data.churchId)
+      );
+    }
+
+    // ─────────────────────────────────────────────
     // CHURCHES
     // ─────────────────────────────────────────────
 

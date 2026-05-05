@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/event_model.dart';
+import '../../../../shared/utils/app_toast.dart';
 import '../../../musics/models/music_model.dart';
 import 'music_selector_sheet.dart';
 
@@ -164,9 +165,7 @@ class _StepEditorSheetState extends State<StepEditorSheet> {
     if (_type == 'music') {
       final musicId = _selectedMusicId;
       if (musicId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Selecione uma música.')),
-        );
+        showErrorToast(context, 'Selecione uma música.');
         return;
       }
       step = EventStepModel(

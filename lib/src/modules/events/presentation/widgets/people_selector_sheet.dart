@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../auth/models/user_model.dart';
+import '../../../../shared/utils/app_toast.dart';
 import '../../../church/models/church_settings_model.dart';
 
 class PeopleSelectorSheet extends StatefulWidget {
@@ -75,15 +76,11 @@ class _PeopleSelectorSheetState extends State<PeopleSelectorSheet> {
   void _confirm() {
     final roleName = _roleName;
     if (roleName.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Informe a função/papel das pessoas.')),
-      );
+      showErrorToast(context, 'Informe a função/papel das pessoas.');
       return;
     }
     if (_selectedIds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selecione ao menos uma pessoa.')),
-      );
+      showErrorToast(context, 'Selecione ao menos uma pessoa.');
       return;
     }
 

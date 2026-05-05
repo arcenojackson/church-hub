@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../core/config/firebase_config.dart';
 import '../../../shared/permissions/app_permission.dart';
 import '../data/profiles_repository.dart';
+import '../../../shared/utils/app_toast.dart';
 import '../models/profile_model.dart';
 
 class ProfileEditorPage extends StatefulWidget {
@@ -96,16 +97,12 @@ class _ProfileEditorPageState extends State<ProfileEditorPage> {
       );
       await repo.saveProfile(profile);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Perfil salvo!')),
-        );
+        showSuccessToast(context, 'Perfil salvo!');
         Navigator.of(context).pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: ${e.toString()}')),
-        );
+        showErrorToast(context, 'Erro: ${e.toString()}');
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -172,9 +169,7 @@ class _ProfileEditorPageState extends State<ProfileEditorPage> {
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao excluir: ${e.toString()}')),
-        );
+        showErrorToast(context, 'Erro ao excluir: ${e.toString()}');
       }
     } finally {
       if (mounted) setState(() => _deleting = false);
@@ -250,7 +245,9 @@ class _ProfileEditorPageState extends State<ProfileEditorPage> {
                     final (permKey, permLabel) = perm;
                     return SwitchListTile(
                       title: Text(permLabel),
-                      value: _permissions[permKey] ?? false,
+                      value: widget.profile?.isAdminRole == true
+                          ? true
+                          : _permissions[permKey] ?? false,
                       onChanged: isFixed
                           ? null
                           : (v) => setState(

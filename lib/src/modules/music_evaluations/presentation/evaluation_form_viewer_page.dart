@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../data/music_evaluations_repository.dart';
 import '../models/evaluation_models.dart';
 import '../../../shared/state/app_state.dart';
+import '../../../shared/utils/app_toast.dart';
 
 class EvaluationFormViewerPage extends StatefulWidget {
   const EvaluationFormViewerPage({
@@ -60,9 +61,7 @@ class _EvaluationFormViewerPageState extends State<EvaluationFormViewerPage> {
       if (mounted) setState(() => _submitted = true);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        showErrorToast(context, e.toString());
       }
     } finally {
       if (mounted) setState(() => _submitting = false);

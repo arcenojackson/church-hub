@@ -66,4 +66,13 @@ class CalendarBatchRepository {
       throw AppException(message: 'Erro ao excluir template: ${e.toString()}');
     }
   }
+
+  Future<int> countTemplates() async {
+    try {
+      final snap = await _col.count().get();
+      return snap.count ?? 0;
+    } catch (_) {
+      return 0;
+    }
+  }
 }

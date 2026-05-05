@@ -38,8 +38,8 @@ class _JoinChurchPageState extends State<JoinChurchPage> {
 
     try {
       final repo = context.read<ChurchRepository>();
-      final church = await repo.findByInviteCode(code);
-      if (church == null) {
+      final churchId = await repo.findChurchIdByInviteCode(code);
+      if (churchId == null) {
         setState(() {
           _error = 'Código inválido ou expirado';
           _loading = false;
@@ -48,11 +48,10 @@ class _JoinChurchPageState extends State<JoinChurchPage> {
       }
 
       final appState = context.read<AppState>();
-      await appState.assignUserToChurch(
-        church.id,
-        UserRole.member,
-      );
-      appState.setChurch(church);
+      // Assign first so the user gets churchId — then the church read is allowed.
+      await appState.assignUserToChurch(churchId, UserRole.member);
+      final church = await repo.fetchChurch(churchId);
+      if (church != null) appState.setChurch(church);
 
       if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
     } on AppException catch (e) {

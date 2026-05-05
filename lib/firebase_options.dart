@@ -23,8 +23,6 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // TODO: Substituir com credenciais do projeto church-hub Firebase
-
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyD6er89097FMlr1FZ-9nnj5O6AAYh-dBuQ',
     appId: '1:50041359262:web:b107f4572e59ca5bd4248f',
@@ -52,7 +50,7 @@ class DefaultFirebaseOptions {
     projectId: 'church-hub-prod',
     storageBucket: 'church-hub-prod.firebasestorage.app',
     iosClientId: '50041359262-stb82njjeudg4tuocr76iub9br3npqb0.apps.googleusercontent.com',
-    iosBundleId: 'com.churchhub.churchHub',
+    iosBundleId: 'com.churchhub.app',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(

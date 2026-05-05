@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../data/availability_repository.dart';
 import '../../../shared/state/app_state.dart';
+import '../../../shared/utils/app_toast.dart';
 
 class EloAvailabilityPage extends StatefulWidget {
   const EloAvailabilityPage({super.key});
@@ -52,15 +53,11 @@ class _EloAvailabilityPageState extends State<EloAvailabilityPage> {
     try {
       await _repo.saveForUser(_userId, _myDates);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Disponibilidade salva!')),
-        );
+        showSuccessToast(context, 'Disponibilidade salva!');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        showErrorToast(context, e.toString());
       }
     } finally {
       if (mounted) setState(() => _saving = false);

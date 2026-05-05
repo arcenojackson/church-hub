@@ -6,6 +6,7 @@ import '../../data/musics_repository.dart';
 import '../../models/music_model.dart';
 import '../../models/youtube_search_result.dart';
 import '../../../../core/utils/app_exception.dart';
+import '../../../../shared/utils/app_toast.dart';
 
 class MusicFormSheet extends StatefulWidget {
   const MusicFormSheet({super.key, this.music});
@@ -70,8 +71,7 @@ class _MusicFormSheetState extends State<MusicFormSheet> {
       if (mounted) setState(() => _youtubeResults = results);
     } on AppException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.message)));
+        showErrorToast(context, e.message);
       }
     } finally {
       if (mounted) setState(() => _searchingYoutube = false);
@@ -114,8 +114,7 @@ class _MusicFormSheetState extends State<MusicFormSheet> {
       if (mounted) Navigator.of(context).pop();
     } on AppException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.message)));
+        showErrorToast(context, e.message);
       }
     } finally {
       if (mounted) setState(() => _saving = false);

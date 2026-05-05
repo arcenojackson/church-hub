@@ -20,8 +20,9 @@ class ChurchHubApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accentColor =
-        context.select<AppState, int?>((s) => s.currentChurch?.accentColor);
+    final accentColor = context.select<AppState, int?>(
+      (s) => s.currentChurch?.accentColor ?? s.cachedAccentColor,
+    );
 
     return MaterialApp(
       navigatorKey: navigatorKey,

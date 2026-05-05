@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../modules/auth/models/user_model.dart';
 import '../../../../shared/state/app_state.dart';
 import '../../../../core/utils/app_exception.dart';
+import '../../../../shared/utils/app_toast.dart';
 import '../../data/church_repository.dart';
 import '../../models/church_settings_model.dart';
 import '../../../../modules/profiles/data/profiles_repository.dart';
@@ -112,15 +113,11 @@ class _OnboardingWizardPageState extends State<OnboardingWizardPage> {
       if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
     } on AppException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message)),
-        );
+        showErrorToast(context, e.message);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erro inesperado. Tente novamente.')),
-        );
+        showErrorToast(context, 'Erro inesperado. Tente novamente.');
       }
     } finally {
       if (mounted) setState(() => _saving = false);

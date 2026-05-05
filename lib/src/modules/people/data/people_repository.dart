@@ -89,6 +89,20 @@ class PeopleRepository {
     });
   }
 
+  Future<int> countPendingMembers() async {
+    try {
+      final snap = await _db
+          .collection('users')
+          .where('churchId', isEqualTo: churchId)
+          .where('status', isEqualTo: 'pending')
+          .count()
+          .get();
+      return snap.count ?? 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
   UserModel _fromDoc(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     data['id'] = doc.id;

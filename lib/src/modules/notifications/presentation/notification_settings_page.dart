@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../shared/state/app_state.dart';
+import '../../../shared/utils/app_toast.dart';
 import '../../../shared/widgets/glass_container.dart';
 import '../models/notification_type.dart';
 import '../repositories/notification_repository.dart';
@@ -40,9 +41,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     } catch (_) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erro ao carregar configurações')),
-        );
+        showErrorToast(context, 'Erro ao carregar configurações');
       }
     }
   }
@@ -67,18 +66,11 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       appState.updateDisabledNotifications(updated);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(enabled ? 'Notificação ativada' : 'Notificação desativada'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        showSuccessToast(context, enabled ? 'Notificação ativada' : 'Notificação desativada');
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erro ao atualizar configuração')),
-        );
+        showErrorToast(context, 'Erro ao atualizar configuração');
       }
     }
   }

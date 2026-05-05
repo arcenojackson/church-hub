@@ -136,6 +136,22 @@ class EventsRepository {
     }
   }
 
+  Future<int> countEventsThisWeek() async {
+    try {
+      final now = DateTime.now();
+      final startOfWeek = DateTime(now.year, now.month, now.day - now.weekday + 1);
+      final endOfWeek = startOfWeek.add(const Duration(days: 7));
+      final snap = await _events
+          .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfWeek))
+          .where('date', isLessThan: Timestamp.fromDate(endOfWeek))
+          .count()
+          .get();
+      return snap.count ?? 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
   // --- TEMPLATES ---
 
   Stream<List<EventTemplateModel>> watchTemplates() {

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../data/holyrics_repository.dart';
 import '../models/holyrics_model.dart';
 import '../../../shared/state/app_state.dart';
+import '../../../shared/utils/app_toast.dart';
 
 class HolyricsSettingsPage extends StatefulWidget {
   const HolyricsSettingsPage({super.key});
@@ -51,15 +52,11 @@ class _HolyricsSettingsPageState extends State<HolyricsSettingsPage> {
         token: _tokenCtrl.text.trim().isEmpty ? null : _tokenCtrl.text.trim(),
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Configurações salvas!')),
-        );
+        showSuccessToast(context, 'Configurações salvas!');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        showErrorToast(context, e.toString());
       }
     } finally {
       if (mounted) setState(() => _saving = false);
