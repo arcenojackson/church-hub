@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "50041359262",
+    "project_id": "church-hub-prod",
+    "storage_bucket": "church-hub-prod.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:50041359262:android:0fc6bb5ba8e15559d4248f",
+        "android_client_info": {
+          "package_name": "com.churchhub.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "50041359262-jpoeaej8g281psd7hph5gidbibuliq9m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCO01v1yWX0QOf6uRSi5NcrwJ3_wOJqLwg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "50041359262-jpoeaej8g281psd7hph5gidbibuliq9m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

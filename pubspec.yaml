@@ -1,0 +1,75 @@
+name: church_hub
+description: "Church Hub — Plataforma SaaS para gestão de igrejas"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # State management
+  provider: ^6.1.2
+
+  # HTTP
+  http: ^1.2.2
+  dio: ^5.7.0
+
+  # Storage
+  shared_preferences: ^2.2.3
+
+  # Localização
+  intl: ^0.19.0
+
+  # URLs e links
+  url_launcher: ^6.3.0
+
+  # Firebase
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.3
+  firebase_analytics: ^11.3.3
+  firebase_crashlytics: ^4.1.3
+  firebase_storage: ^12.3.2
+  firebase_messaging: ^15.1.3
+
+  # Auth providers
+  google_sign_in: ^6.2.1
+  sign_in_with_apple: ^6.1.3
+
+  # UI
+  table_calendar: ^3.1.2
+  flutter_markdown: ^0.6.18
+  cached_network_image: ^3.4.1
+
+  # Media
+  youtube_player_iframe: ^4.0.4
+  webview_flutter: ^4.4.2
+  image_picker: ^1.1.2
+  path_provider: ^2.1.4
+  share_plus: ^10.1.3
+
+  # Util
+  package_info_plus: ^9.0.0
+
+  # Notificações
+  flutter_local_notifications: ^18.0.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/docs/
+    - assets/steps.json
+

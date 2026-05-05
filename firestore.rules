@@ -1,0 +1,242 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─────────────────────────────────────────────
+    // HELPERS
+    // ─────────────────────────────────────────────
+
+    function isLoggedIn() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isChurchAdmin(churchId) {
+      return isLoggedIn() &&
+        getUserData().churchId == churchId &&
+        getUserData().role == 'churchAdmin';
+    }
+
+    function isChurchMember(churchId) {
+      return isLoggedIn() &&
+        getUserData().churchId == churchId &&
+        getUserData().status == 'active';
+    }
+
+    function getUserProfile(churchId) {
+      let userData = getUserData();
+      let profileId = userData.get('profileId', 'member');
+      return get(/databases/$(database)/documents/churches/$(churchId)/profiles/$(profileId)).data;
+    }
+
+    function hasChurchPermission(churchId, permission) {
+      return isLoggedIn() &&
+        getUserData().churchId == churchId &&
+        getUserData().status == 'active' && (
+          getUserData().role == 'churchAdmin' ||
+          getUserProfile(churchId).get('isAdminRole', false) == true ||
+          getUserProfile(churchId).permissions.get(permission, false) == true
+        );
+    }
+
+    // ─────────────────────────────────────────────
+    // USERS
+    // ─────────────────────────────────────────────
+
+    match /users/{userId} {
+      allow read: if isLoggedIn() && (
+        request.auth.uid == userId ||
+        (getUserData().churchId != null &&
+         resource.data.churchId == getUserData().churchId &&
+         getUserData().status == 'active')
+      );
+      allow create: if isLoggedIn() && request.auth.uid == userId;
+      allow update: if isLoggedIn() && (
+        request.auth.uid == userId ||
+        // churchAdmin pode atualizar status de membros da sua igreja
+        (getUserData().role == 'churchAdmin' &&
+         resource.data.churchId == getUserData().churchId)
+      );
+      allow delete: if isLoggedIn() && request.auth.uid == userId;
+    }
+
+    // ─────────────────────────────────────────────
+    // CHURCHES
+    // ─────────────────────────────────────────────
+
+    match /churches/{churchId} {
+      allow read: if isLoggedIn() && getUserData().churchId == churchId;
+      allow create: if isLoggedIn();
+      allow update: if isChurchAdmin(churchId);
+      allow delete: if false;
+
+      // Settings
+      match /settings/{doc} {
+        allow read: if isChurchMember(churchId);
+        allow write: if isChurchAdmin(churchId);
+      }
+
+      // Profiles
+      match /profiles/{profileId} {
+        allow read: if isChurchMember(churchId);
+        allow write: if isChurchAdmin(churchId);
+      }
+
+      // ─────────────────────────────────────────────
+      // EVENTS
+      // ─────────────────────────────────────────────
+
+      match /events/{eventId} {
+        allow read: if isChurchMember(churchId);
+        allow create: if hasChurchPermission(churchId, 'plan_events');
+        allow update: if hasChurchPermission(churchId, 'plan_events');
+        allow delete: if isChurchAdmin(churchId);
+
+        // Event chat messages (Free+)
+        match /messages/{messageId} {
+          allow read: if hasChurchPermission(churchId, 'view_event_chat');
+          allow create: if hasChurchPermission(churchId, 'send_event_chat') &&
+            request.resource.data.userId == request.auth.uid;
+          allow delete: if isChurchAdmin(churchId) ||
+            (isChurchMember(churchId) && resource.data.userId == request.auth.uid);
+        }
+      }
+
+      // ─────────────────────────────────────────────
+      // TEMPLATES (Free+)
+      // ─────────────────────────────────────────────
+
+      match /templates/{templateId} {
+        allow read: if isChurchMember(churchId);
+        allow write: if isChurchAdmin(churchId);
+      }
+
+      // ─────────────────────────────────────────────
+      // CALENDAR EVENTS (Free+)
+      // ─────────────────────────────────────────────
+
+      match /events_calendar/{calendarEventId} {
+        allow read: if isChurchMember(churchId);
+        allow write: if isChurchAdmin(churchId);
+      }
+
+      // ─────────────────────────────────────────────
+      // PEOPLE (Free+)
+      // ─────────────────────────────────────────────
+
+      match /people/{personId} {
+        allow read: if isChurchMember(churchId);
+        allow write: if isChurchAdmin(churchId);
+      }
+
+      // ─────────────────────────────────────────────
+      // MUSIC LIBRARY (Free+)
+      // ─────────────────────────────────────────────
+
+      match /musics/{musicId} {
+        allow read: if hasChurchPermission(churchId, 'view_musics');
+        allow write: if hasChurchPermission(churchId, 'edit_musics');
+      }
+
+      match /music_categories/{categoryId} {
+        allow read: if isChurchMember(churchId);
+        allow write: if isChurchAdmin(churchId);
+      }
+
+      // ─────────────────────────────────────────────
+      // ELO (Free+)
+      // ─────────────────────────────────────────────
+
+      match /elo/{doc} {
+        allow read: if isChurchMember(churchId);
+        allow write: if isChurchAdmin(churchId);
+      }
+
+      match /elo/roles/{roleId} {
+        allow read: if isChurchMember(churchId);
+        allow write: if isChurchAdmin(churchId);
+      }
+
+      match /elo/availability/{userId} {
+        allow read: if isChurchMember(churchId);
+        // Membros podem editar apenas sua própria disponibilidade
+        allow write: if isChurchMember(churchId) && userId == request.auth.uid;
+      }
+
+      // ─────────────────────────────────────────────
+      // SOCIETIES
+      // ─────────────────────────────────────────────
+
+      match /societies/{societyId} {
+        allow read: if hasChurchPermission(churchId, 'view_societies');
+        allow create: if hasChurchPermission(churchId, 'manage_societies');
+        allow update: if hasChurchPermission(churchId, 'manage_societies');
+        allow delete: if isChurchAdmin(churchId);
+
+        match /messages/{messageId} {
+          allow read: if isChurchMember(churchId);
+          allow create: if isChurchMember(churchId) &&
+            request.resource.data.userId == request.auth.uid;
+          allow delete: if isChurchAdmin(churchId);
+        }
+      }
+
+      // ─────────────────────────────────────────────
+      // CALENDAR ART
+      // ─────────────────────────────────────────────
+
+      match /calendar_art_templates/{templateId} {
+        allow read: if isChurchMember(churchId);
+        allow write: if isChurchAdmin(churchId);
+      }
+
+      // ─────────────────────────────────────────────
+      // CALENDAR BATCH TEMPLATES
+      // ─────────────────────────────────────────────
+
+      match /calendar_batch_templates/{templateId} {
+        allow read: if isChurchMember(churchId);
+        allow write: if hasChurchPermission(churchId, 'plan_events');
+      }
+
+      // ─────────────────────────────────────────────
+      // MUSIC EVALUATIONS
+      // ─────────────────────────────────────────────
+
+      match /evaluations/{evalDoc} {
+        allow read: if isChurchMember(churchId);
+        allow write: if isChurchAdmin(churchId);
+      }
+
+      match /evaluations/forms/{formId} {
+        allow read: if isChurchMember(churchId);
+        allow write: if isChurchAdmin(churchId);
+      }
+
+      match /evaluations/categories/{catId} {
+        allow read: if isChurchMember(churchId);
+        allow write: if isChurchAdmin(churchId);
+      }
+
+      match /evaluations/responses/{responseId} {
+        allow read: if isChurchMember(churchId);
+        allow create: if isChurchMember(churchId) &&
+          request.resource.data.userId == request.auth.uid;
+        allow update: if isChurchAdmin(churchId);
+      }
+
+      // ─────────────────────────────────────────────
+      // HOLYRICS
+      // ─────────────────────────────────────────────
+
+      match /holyrics_config/{configId} {
+        allow read: if isChurchMember(churchId);
+        allow write: if isChurchAdmin(churchId);
+      }
+    }
+  }
+}
