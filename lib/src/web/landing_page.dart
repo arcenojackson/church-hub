@@ -454,7 +454,7 @@ class _DonationSection extends StatelessWidget {
               const SizedBox(height: 32),
               FilledButton.icon(
                 onPressed: () => launchUrl(
-                  Uri.parse('https://donate.stripe.com/test_dRmaEXdxW9qf8ht8xC1sQ00'),
+                  Uri.parse('https://donate.stripe.com/5kQeVddXg5ZpfOdezO87K00'),
                   mode: LaunchMode.externalApplication,
                 ),
                 icon: const Icon(Icons.volunteer_activism_rounded),

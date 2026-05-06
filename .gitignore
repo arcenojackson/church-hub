@@ -49,7 +49,7 @@ functions/node_modules/
 functions/lib/
 
 # Claude local settings
-**/.claude/settings.local.json
+.claude/
 
 # Firebase cache
 .firebase/

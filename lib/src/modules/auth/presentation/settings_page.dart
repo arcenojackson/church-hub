@@ -406,7 +406,7 @@ class _QuickAccessTile extends StatelessWidget {
 
 class _DonationBanner extends StatelessWidget {
   static const _donationUrl =
-      'https://donate.stripe.com/test_dRmaEXdxW9qf8ht8xC1sQ00';
+      'https://donate.stripe.com/5kQeVddXg5ZpfOdezO87K00';
 
   Future<void> _openDonation(BuildContext context) async {
     final uri = Uri.parse(_donationUrl);
