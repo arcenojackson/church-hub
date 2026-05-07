@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/prev1.png" alt="Church Hub" width="600"/>
+  <img src=".github/assets/landing.png" alt="Church Hub" width="800"/>
 </p>
 
 <h1 align="center">Church Hub</h1>
@@ -9,7 +9,9 @@
 </p>
 
 <p align="center">
-  <a href="https://church-hub-prod.web.app/" target="_blank"><strong>🌐 Acessar versão Web</strong></a> &nbsp;|&nbsp;
+  <a href="https://church-hub-prod.web.app/" target="_blank"><strong>🌐 Versão Web</strong></a> &nbsp;|&nbsp;
+  <a href="https://apps.apple.com/app/church-hub" target="_blank"><strong>🍎 App Store</strong></a> &nbsp;|&nbsp;
+  <a href="https://play.google.com/store/apps/details?id=com.churchhub.app" target="_blank"><strong>🤖 Google Play</strong></a> &nbsp;|&nbsp;
   <a href="#-contribuindo">Contribuir</a> &nbsp;|&nbsp;
   <a href="#-doações">Apoiar o projeto</a>
 </p>
@@ -17,7 +19,7 @@
 <p align="center">
   <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter"/>
   <img alt="Firebase" src="https://img.shields.io/badge/Firebase-enabled-FFCA28?logo=firebase"/>
-  <img alt="License" src="https://img.shields.io/badge/license-MIT-green"/>
+  <img alt="License" src="https://img.shields.io/badge/license-AGPL--3.0-blue"/>
   <img alt="Platform" src="https://img.shields.io/badge/platform-Android%20%7C%20iOS%20%7C%20Web-lightgrey"/>
 </p>
 
@@ -52,7 +54,7 @@ Funcionalidades principais:
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/church-hub.git
+git clone https://github.com/arcenojackson/church-hub.git
 cd church-hub
 ```
 
@@ -151,4 +153,4 @@ O Church Hub é e sempre será gratuito. Se ele te ajudou ou você quer apoiar o
 
 ## 📄 Licença
 
-Distribuído sob a licença MIT. Veja [`LICENSE`](LICENSE) para mais detalhes.
+Distribuído sob a licença [GNU AGPL v3](LICENSE). Ao usar, modificar ou hospedar este software, você é obrigado a disponibilizar o código-fonte das suas modificações.
