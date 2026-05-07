@@ -46,6 +46,7 @@ class _LoginPageState extends State<LoginPage> {
           password: _passwordCtrl.text,
         );
       }
+      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
     } on Exception catch (e) {
       if (mounted) {
         showErrorToast(context, e.toString());
@@ -57,6 +58,7 @@ class _LoginPageState extends State<LoginPage> {
     final state = context.read<AppState>();
     try {
       await state.signInWithGoogle();
+      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
     } on Exception catch (e) {
       if (mounted) {
         showErrorToast(context, e.toString());
@@ -68,6 +70,7 @@ class _LoginPageState extends State<LoginPage> {
     final state = context.read<AppState>();
     try {
       await state.signInWithApple();
+      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
     } on Exception catch (e) {
       if (mounted) {
         showErrorToast(context, e.toString());

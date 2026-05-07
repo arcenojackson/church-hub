@@ -82,7 +82,7 @@ service cloud.firestore {
     // ─────────────────────────────────────────────
 
     match /invite_codes/{code} {
-      allow read: if isLoggedIn();
+      allow read: if true;
       allow write: if isLoggedIn() && (
         !exists(/databases/$(database)/documents/invite_codes/$(code)) ||
         isChurchAdmin(get(/databases/$(database)/documents/invite_codes/$(code)).data.churchId)

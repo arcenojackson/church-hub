@@ -1,8 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class DeleteAccountPage extends StatefulWidget {
-  const DeleteAccountPage({super.key});
+  const DeleteAccountPage({super.key, this.onSuccess});
+
+  final VoidCallback? onSuccess;
 
   @override
   State<DeleteAccountPage> createState() => _DeleteAccountPageState();
@@ -47,15 +50,17 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
 
       final churchId = codeDoc.data()!['churchId'] as String;
 
+      // Include uid when the user is already authenticated (in-app flow)
+      final currentUid = FirebaseAuth.instance.currentUser?.uid;
+
       // Write deletion request — processed async by Cloud Function trigger
-      final docId = '${email.replaceAll('@', '_').replaceAll('.', '_')}_$churchCode';
       await FirebaseFirestore.instance
           .collection('deletion_requests')
-          .doc(docId)
-          .set({
+          .add({
         'email': email,
         'churchCode': churchCode,
         'churchId': churchId,
+        if (currentUid != null) 'uid': currentUid,
         'status': 'pending',
         'createdAt': FieldValue.serverTimestamp(),
       });
@@ -100,7 +105,7 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 560),
-            child: _success ? const _SuccessCard() : _PageContent(
+            child: _success ? _SuccessCard(onSuccess: widget.onSuccess) : _PageContent(
               formKey: _formKey,
               emailCtrl: _emailCtrl,
               codeCtrl: _codeCtrl,
@@ -516,7 +521,9 @@ class _Field extends StatelessWidget {
 }
 
 class _SuccessCard extends StatelessWidget {
-  const _SuccessCard();
+  const _SuccessCard({this.onSuccess});
+
+  final VoidCallback? onSuccess;
 
   @override
   Widget build(BuildContext context) {
@@ -544,8 +551,7 @@ class _SuccessCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           const Text(
-            'Sua conta será excluída em até 24 horas. Você receberá '
-            'uma confirmação por e-mail quando o processo for concluído.',
+            'Sua solicitação foi recebida e sua conta será excluída em instantes.',
             style: TextStyle(color: Colors.white54, fontSize: 14, height: 1.6),
             textAlign: TextAlign.center,
           ),
@@ -558,7 +564,13 @@ class _SuccessCard extends StatelessWidget {
           ),
           const SizedBox(height: 32),
           TextButton(
-            onPressed: () => Navigator.of(context).maybePop(),
+            onPressed: () {
+              if (onSuccess != null) {
+                onSuccess!();
+              } else {
+                Navigator.of(context).maybePop();
+              }
+            },
             child: const Text('Voltar ao início'),
           ),
         ],

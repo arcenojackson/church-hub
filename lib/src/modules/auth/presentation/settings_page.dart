@@ -17,6 +17,7 @@ import '../../music_evaluations/presentation/evaluations_list_page.dart';
 import '../../people/data/people_repository.dart';
 import '../../people/presentation/people_section.dart';
 import '../../notifications/presentation/notification_settings_page.dart';
+import '../../../web/delete_account_page.dart';
 
 // Usado pelo desktop HomeShell como wrapper com AppBar
 class SettingsPage extends StatelessWidget {
@@ -80,6 +81,23 @@ class SettingsSection extends StatelessWidget {
               }
             }
           },
+        ),
+        ListTile(
+          leading: const Icon(Icons.delete_forever_rounded, color: Colors.redAccent),
+          title: const Text('Excluir conta', style: TextStyle(color: Colors.redAccent)),
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => DeleteAccountPage(
+                onSuccess: () async {
+                  await appState.signOut();
+                  if (context.mounted) {
+                    Navigator.of(context).popUntil((r) => r.isFirst);
+                  }
+                },
+              ),
+            ),
+          ),
         ),
         ListTile(
           leading: const Icon(Icons.logout_rounded, color: Colors.redAccent),

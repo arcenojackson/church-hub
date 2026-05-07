@@ -473,18 +473,44 @@ export const onDeletionRequestCreated = functions
 
       const fail = async (reason: string) => {
         console.warn(`Deletion request ${docId} rejected: ${reason}`);
-        await snapshot.ref.delete();
+        try {
+          await snapshot.ref.update({
+            status: "rejected",
+            rejectedReason: reason,
+          });
+        } catch (e) {
+          console.error(`Could not update rejection status for ${docId}:`, e);
+        }
       };
 
       if (!email || !churchId) return fail("missing fields");
 
-      // 1. Find Firebase Auth user by email
-      let uid: string;
-      try {
-        const authUser = await admin.auth().getUserByEmail(email);
-        uid = authUser.uid;
-      } catch {
-        return fail(`no auth user for email ${email}`);
+      // 1. Resolve uid: request field → Auth lookup → Firestore fallback
+      let uid: string | undefined = (data.uid || "").trim() || undefined;
+
+      if (!uid) {
+        try {
+          const authUser = await admin.auth().getUserByEmail(email);
+          uid = authUser.uid;
+        } catch (e: unknown) {
+          const err = e as {code?: string; message?: string};
+          console.warn(
+              `getUserByEmail failed for ${email}:`,
+              err.code, err.message
+          );
+          // Fallback: find uid via Firestore
+          const usersSnap = await db.collection("users")
+              .where("email", "==", email)
+              .where("churchId", "==", churchId)
+              .limit(1)
+              .get();
+          if (usersSnap.empty) {
+            return fail(
+                `no user found for email ${email} in church ${churchId}`
+            );
+          }
+          uid = usersSnap.docs[0].id;
+        }
       }
 
       // 2. Verify user belongs to this church
@@ -496,11 +522,24 @@ export const onDeletionRequestCreated = functions
       // 3. Delete Firestore user document
       await db.collection("users").doc(uid).delete();
 
-      // 4. Delete Firebase Auth account
-      await admin.auth().deleteUser(uid);
+      // 4. Delete church-scoped user data
+      const churchRef = db.collection("churches").doc(churchId);
+      await Promise.allSettled([
+        churchRef.collection("people").doc(uid).delete(),
+        churchRef.collection("elo").doc(uid).delete(),
+      ]);
 
-      // 5. Mark request as completed
-      await snapshot.ref.set({...data, status: "completed"}, {merge: true});
+      // 5. Delete Firebase Auth account
+      try {
+        await admin.auth().deleteUser(uid);
+      } catch (e: unknown) {
+        const err = e as {code?: string};
+        if (err.code !== "auth/user-not-found") throw e;
+        console.warn(`Auth user ${uid} already deleted, continuing`);
+      }
+
+      // 6. Mark request as completed
+      await snapshot.ref.update({status: "completed"});
 
       console.log(`Account deleted via request ${docId}: uid=${uid}`);
       return null;
