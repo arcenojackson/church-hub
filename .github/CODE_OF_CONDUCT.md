@@ -20,7 +20,7 @@ Esperamos que participantes tratem uns aos outros com respeito e boa-fé.
 
 ## Aplicação
 
-Comportamentos inaceitáveis podem ser reportados ao mantenedor: **jackson.f205@gmail.com**.
+Comportamentos inaceitáveis podem ser reportados ao mantenedor: **me@arcenojackson.dev**.
 Toda denúncia será analisada com confidencialidade.
 
 Baseado no [Contributor Covenant](https://www.contributor-covenant.org), versão 2.1.

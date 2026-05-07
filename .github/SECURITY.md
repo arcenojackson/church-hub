@@ -10,7 +10,7 @@
 
 **Não abra uma issue pública para vulnerabilidades de segurança.**
 
-Envie um e-mail para **jackson.f205@gmail.com** com:
+Envie um e-mail para **me@arcenojackson.dev** com:
 
 - Descrição da vulnerabilidade
 - Passos para reproduzir

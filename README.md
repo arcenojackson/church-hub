@@ -10,8 +10,8 @@
 
 <p align="center">
   <a href="https://church-hub-prod.web.app/" target="_blank"><strong>🌐 Versão Web</strong></a> &nbsp;|&nbsp;
-  <a href="https://apps.apple.com/app/church-hub" target="_blank"><strong>🍎 App Store</strong></a> &nbsp;|&nbsp;
-  <a href="https://play.google.com/store/apps/details?id=com.churchhub.app" target="_blank"><strong>🤖 Google Play</strong></a> &nbsp;|&nbsp;
+  <a href="https://apps.apple.com/br/app/church-hub/id6766631440" target="_blank"><strong>🍎 App Store</strong></a> &nbsp;|&nbsp;
+  <strong>🤖 Google Play</strong> &nbsp;|&nbsp;
   <a href="#-contribuindo">Contribuir</a> &nbsp;|&nbsp;
   <a href="#-doações">Apoiar o projeto</a>
 </p>
