@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=".github/assets/landing.png" alt="Church Hub" width="800"/>
+  <img src=".github/assets/landing-v2.png" alt="Church Hub" width="800"/>
 </p>
 
 <h1 align="center">Church Hub</h1>
