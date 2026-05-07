@@ -150,6 +150,7 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   Future<void> _deleteEvent(CalendarEventModel event) async {
+    final repo = context.read<EventsRepository>();
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -167,7 +168,6 @@ class _CalendarPageState extends State<CalendarPage> {
     );
     if (confirm != true) return;
     try {
-      final repo = context.read<EventsRepository>();
       if (event.sourceCollection == 'services') {
         await repo.deleteEvent(event.id);
       } else {
@@ -306,6 +306,8 @@ class _CalendarPageState extends State<CalendarPage> {
       }
       return;
     }
+
+    if (!mounted) return;
 
     final monthName = DateFormat('MMMM', 'pt_BR').format(_focusedDay);
     final capitalizedMonthName = monthName[0].toUpperCase() + monthName.substring(1);

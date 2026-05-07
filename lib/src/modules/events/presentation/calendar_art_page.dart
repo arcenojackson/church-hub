@@ -181,6 +181,7 @@ class _CalendarArtPageState extends State<CalendarArtPage> {
 
   Future<void> _generateAndShare() async {
     setState(() => _isGenerating = true);
+    final churchName = context.read<AppState>().currentChurch?.name ?? 'church';
     try {
       await Future.delayed(const Duration(milliseconds: 100));
       final boundary = _artKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
@@ -196,7 +197,6 @@ class _CalendarArtPageState extends State<CalendarArtPage> {
       }
       final dir = await getTemporaryDirectory();
       final monthName = DateFormat('MMMM', 'pt_BR').format(_selectedMonth);
-      final churchName = context.read<AppState>().currentChurch?.name ?? 'church';
       final name = '${_slug(churchName)}_calendario_${_slug(monthName)}_${_selectedMonth.year}.png';
       final file = File('${dir.path}/$name');
       await file.writeAsBytes(byteData.buffer.asUint8List());
@@ -410,7 +410,9 @@ class _CategoryFilterSheetState extends State<_CategoryFilterSheet> {
                   title: const Text('Todos'),
                   trailing: Radio<bool>(
                     value: true,
+                    // ignore: deprecated_member_use
                     groupValue: _temp.isEmpty,
+                    // ignore: deprecated_member_use
                     onChanged: (_) => setState(() => _temp = []),
                   ),
                   onTap: () => setState(() => _temp = []),

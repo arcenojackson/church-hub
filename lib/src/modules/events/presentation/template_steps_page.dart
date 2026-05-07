@@ -131,7 +131,7 @@ class _TemplateStepsPageState extends State<TemplateStepsPage> {
                   const Icon(Icons.schedule_rounded, size: 16, color: Colors.white38),
                   const SizedBox(width: 6),
                   Text(
-                    'Duração total: ${_totalDuration} min',
+                    'Duração total: $_totalDuration min',
                     style: const TextStyle(color: Colors.white38, fontSize: 13),
                   ),
                 ],

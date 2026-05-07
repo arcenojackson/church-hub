@@ -21,7 +21,7 @@ class WizardStep3Templates extends StatefulWidget {
 }
 
 class _WizardStep3TemplatesState extends State<WizardStep3Templates> {
-  late Set<String> _selected = Set.from(widget.data.selectedTemplates);
+  late final Set<String> _selected = Set.from(widget.data.selectedTemplates);
 
   static const _options = [
     _TemplateOption(

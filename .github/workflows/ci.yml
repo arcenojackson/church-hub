@@ -46,6 +46,9 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Create app_secrets stub for CI
+        run: cp lib/src/core/config/app_secrets.dart.example lib/src/core/config/app_secrets.dart
+
       - name: Install dependencies
         run: flutter pub get
 

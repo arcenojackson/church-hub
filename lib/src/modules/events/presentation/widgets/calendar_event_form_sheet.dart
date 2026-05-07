@@ -190,6 +190,7 @@ class _CalendarEventFormSheetState extends State<CalendarEventFormSheet> {
                             onChanged: (v) => _selectedCategory = v,
                           )
                         : DropdownButtonFormField<String>(
+                            // ignore: deprecated_member_use
                             value: _selectedCategory.isEmpty
                                 ? 'Geral'
                                 : _selectedCategory,

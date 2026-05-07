@@ -14,7 +14,7 @@ class WizardStep2EloConfig extends StatefulWidget {
 }
 
 class _WizardStep2EloConfigState extends State<WizardStep2EloConfig> {
-  late List<EloRoleConfig> _roles = List.from(widget.data.eloRoles);
+  late final List<EloRoleConfig> _roles = List.from(widget.data.eloRoles);
   final _nameCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
 

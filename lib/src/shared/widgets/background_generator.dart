@@ -143,6 +143,7 @@ class ProceduralBackgroundData {
   final Size size;
   final ProceduralBackgroundParams params;
   final ui.Picture? grainPicture;
+  // ignore: library_private_types_in_public_api
   final List<_BlobShape> blobShapes;
 
   @override
@@ -301,7 +302,9 @@ class ProceduralBackgroundPainter extends CustomPainter {
     canvas.save();
     canvas.clipRect(rect);
     MeshGradientLayerPainter(data: data).paint(canvas, size);
-    for (final shape in data.blobShapes) canvas.drawPath(shape.path, shape.paint);
+    for (final shape in data.blobShapes) {
+      canvas.drawPath(shape.path, shape.paint);
+    }
     if (data.params.grainEnabled && data.grainPicture != null && data.params.grainIntensity > 0) {
       canvas.saveLayer(rect, Paint()..color = Colors.white.withValues(alpha: data.params.grainIntensity.clamp(0.0, 1.0)));
       canvas.drawPicture(data.grainPicture!);

@@ -53,7 +53,7 @@ class CalendarArtWidget extends StatelessWidget {
         ? template.titleText!
         : churchName != null && churchName!.isNotEmpty
             ? '$churchName – ${_capitalize(monthName)} $year'
-            : _capitalize(monthName) + ' $year';
+            : '${_capitalize(monthName)} $year';
 
     final baseColor = template.gradientColor != null
         ? Color(template.gradientColor!)

@@ -38,6 +38,7 @@ class _JoinChurchPageState extends State<JoinChurchPage> {
 
     try {
       final repo = context.read<ChurchRepository>();
+      final appState = context.read<AppState>();
       final churchId = await repo.findChurchIdByInviteCode(code);
       if (churchId == null) {
         setState(() {
@@ -46,8 +47,6 @@ class _JoinChurchPageState extends State<JoinChurchPage> {
         });
         return;
       }
-
-      final appState = context.read<AppState>();
       // Assign first so the user gets churchId — then the church read is allowed.
       await appState.assignUserToChurch(churchId, UserRole.member);
       final church = await repo.fetchChurch(churchId);

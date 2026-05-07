@@ -13,7 +13,7 @@ class WizardStep4Structure extends StatefulWidget {
 }
 
 class _WizardStep4StructureState extends State<WizardStep4Structure> {
-  late List<Map<String, dynamic>> _steps = List.from(
+  late final List<Map<String, dynamic>> _steps = List.from(
     widget.data.defaultSteps.isNotEmpty
         ? widget.data.defaultSteps
         : _defaultSteps,

@@ -260,6 +260,7 @@ class _EventEditorPageState extends State<EventEditorPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         DropdownButtonFormField<CalendarBatchTemplateModel?>(
+          // ignore: deprecated_member_use
           value: _selectedTemplate,
           menuMaxHeight: 300,
           items: items,
